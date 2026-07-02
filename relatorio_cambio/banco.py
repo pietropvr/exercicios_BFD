@@ -1,6 +1,8 @@
 import sqlite3
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
 
 def conectar():
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
@@ -27,13 +29,16 @@ def criar_tabelas():
         )
         """)
 
+
 def salvar_cotacao(moeda, compra, venda):
-    data_atual = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    fuso_br = ZoneInfo("America/Sao_Paulo")
+    data_atual = datetime.now(fuso_br).strftime("%d/%m/%Y %H:%M:%S")
     with conectar() as con:
         con.execute(
             "INSERT INTO cotacoes (moeda, compra, venda, data_hora) VALUES (?, ?, ?, ?)",
             (moeda, float(compra), float(venda), data_atual)
         )
+
 
 def buscar_historico(moeda=None):
     with conectar() as con:
@@ -42,10 +47,10 @@ def buscar_historico(moeda=None):
             cursor.execute("SELECT * FROM cotacoes WHERE moeda = ?", (moeda,))
         else:
             cursor.execute("SELECT * FROM cotacoes")
-        
         resultados = cursor.fetchall()
         cursor.close()
-        return resultados
+    return resultados
+
 
 def buscar_historico_dias(moeda, dias):
     with conectar() as con:
@@ -54,10 +59,10 @@ def buscar_historico_dias(moeda, dias):
         SELECT data_hora, compra FROM cotacoes 
         WHERE moeda = ? ORDER BY id DESC LIMIT ?
         """, (moeda, dias))
-        
         resultados = cursor.fetchall()
         cursor.close()
-        return resultados
+    return resultados
+
 
 def salvar_template(nome, texto):
     with conectar() as con:

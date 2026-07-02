@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 import api
 import banco
 from rich.console import Console
@@ -7,7 +8,13 @@ from rich.panel import Panel
 from rich.table import Table
 from jinja2 import Template
 
+# Configura o fuso horário do ambiente para São Paulo
+os.environ['TZ'] = 'America/Sao_Paulo'
+if hasattr(time, 'tzset'):
+    time.tzset()
+
 console = Console()
+
 
 def exibir_menu():
     console.print("\n[bold blue]=== Relatório de Câmbio ===[/bold blue]")
@@ -23,6 +30,7 @@ def exibir_menu():
     console.print("0. Sair")
     return input("Escolha uma opção: ")
 
+
 def opcao_1_consultar():
     moeda = input("Sigla da moeda (ex: USD, EUR): ").upper()
     dados = api.consultar_moeda(moeda)
@@ -33,6 +41,7 @@ def opcao_1_consultar():
         console.print(Panel(texto, title="Cotação Atual", style="green"))
     else:
         console.print("[red]Moeda não encontrada, erro na API ou sem conexão.[/red]")
+
 
 def opcao_2_relatorio():
     moeda = input("Sigla da moeda (ex: USD): ").upper()
@@ -50,7 +59,6 @@ def opcao_2_relatorio():
     registros.reverse() 
     dados_jinja = []
     valor_anterior = None
-    
     for data, valor in registros:
         variacao = 0.0
         if valor_anterior is not None:
@@ -69,8 +77,8 @@ Relatório de Variação - {{ moeda }}
     
     # Exibe no terminal
     console.print(Panel(texto, title=f"Variação - {moeda}", style="blue"))
-    
-    # Exporta para arquivo (Tarefa Bônus)
+
+    # Exporta para arquivo
     try:
         nome_arquivo = f"relatorio_{moeda.lower()}.txt"
         with open(nome_arquivo, "w", encoding="utf-8") as f:
@@ -79,6 +87,7 @@ Relatório de Variação - {{ moeda }}
     except Exception as e:
         console.print(f"[red]Erro ao salvar o arquivo: {e}[/red]")
 
+
 def opcao_3_template():
     texto_usuario = input("Digite seu template Jinja2 (ex: Hoje: {{ compra }}): ")
     val_compra = input("Valor para 'compra': ")
@@ -86,6 +95,7 @@ def opcao_3_template():
     resultado = template.render(compra=val_compra)
     banco.salvar_template("template_banco", texto_usuario)
     console.print(Panel(resultado, title="Resultado", style="magenta"))
+
 
 def opcao_4_historico():
     filtro = input("Filtrar por moeda (Enter para todas): ").upper()
@@ -98,6 +108,7 @@ def opcao_4_historico():
     for linha in historico:
         tabela.add_row(str(linha[0]), linha[1], f"R$ {linha[2]:.2f}", linha[4])
     console.print(tabela)
+
 
 def opcao_5_comparar():
     m1 = input("Primeira moeda (ex: USD): ").upper()
@@ -113,6 +124,7 @@ def opcao_5_comparar():
     else:
         console.print("[red]Erro ao buscar cotações. Verifique as siglas ou sua conexão.[/red]")
 
+
 def opcao_6_template_txt():
     nome_arquivo = input("Nome do arquivo (ex: layout.txt): ")
     if not os.path.exists(nome_arquivo):
@@ -120,12 +132,14 @@ def opcao_6_template_txt():
             f.write("Template do Arquivo!\nMoeda: {{ m }} | Valor: R$ {{ v }}")
         console.print(f"[yellow]Arquivo de exemplo '{nome_arquivo}' criado. Tente rodar novamente.[/yellow]")
         return
+
     with open(nome_arquivo, "r", encoding="utf-8") as f:
         texto = f.read()
     moeda = input("Qual a moeda? (ex: USD): ")
     valor = input("Qual o valor? ")
     template = Template(texto)
     console.print(Panel(template.render(m=moeda, v=valor), title="Template via TXT", style="green"))
+
 
 def opcao_7_conversor():
     entrada = input("Quantos Reais (R$) você tem? ").replace(",", ".")
@@ -142,7 +156,7 @@ def opcao_7_conversor():
         if cotacao:
             convertido = reais / cotacao['compra']
             dados_jinja.append({"moeda": m, "valor": convertido})
-    
+
     if dados_jinja:
         template = Template("""
 **Com R$ {{ "%.2f"|format(grana) }}, você compra:**
@@ -154,10 +168,10 @@ def opcao_7_conversor():
     else:
         console.print("[red]Não foi possível realizar a conversão no momento.[/red]")
 
+
 def opcao_8_alerta():
     moeda = input("Moeda para monitorar (ex: USD): ").upper()
     entrada_alvo = input("Avisar se o preço cair abaixo de qual valor? (ex: 5.00): ").replace(",", ".")
-    
     try:
         alvo = float(entrada_alvo)
     except ValueError:
@@ -174,6 +188,7 @@ def opcao_8_alerta():
             console.print(f"[blue]Tudo normal. O valor atual é R$ {cotacao['compra']:.2f}.[/blue]")
     else:
         console.print("[red]Erro ao buscar a cotação. Verifique a sigla ou sua conexão.[/red]")
+
 
 if __name__ == "__main__":
     banco.criar_tabelas()

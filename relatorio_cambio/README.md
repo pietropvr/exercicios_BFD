@@ -1,32 +1,38 @@
-# Sistema de Consulta e Análise de Câmbio
+# Sistema de Relatório de Câmbio
 
-Este projeto é uma aplicação em Python desenvolvida para consultar, armazenar e analisar cotações de moedas em tempo real. O sistema foi refatorado para utilizar a **Brasil API** como fonte de dados, garantindo maior estabilidade e aderência às diretrizes do projeto. 
+Uma aplicação de linha de comando (CLI) desenvolvida em Python para consultar, armazenar e analisar cotações de moedas em tempo real. O sistema utiliza uma API de câmbio para obter os dados, salva o histórico em um banco de dados SQLite local e exibe relatórios formatados utilizando o Jinja2 e a biblioteca Rich.
 
-A aplicação conta com uma interface de terminal estilizada, persistência de dados local e recursos avançados implementados como tarefas bônus.
+## Funcionalidades
 
-## Funcionalidades Principais
+O sistema possui um menu interativo com as seguintes opções:
 
-* **Consulta via Brasil API:** Integração direta com a Brasil API para obter as cotações de moedas atualizadas.
-* **Armazenamento Local (SQLite):** Todas as consultas realizadas são salvas no banco de dados local (`dados_cambio.db`), construindo um histórico de cotações para consultas futuras.
-* **Cálculo de Variações:** Ferramentas de análise para calcular e exibir a variação de taxas entre diferentes datas registradas no histórico.
-* **Interface de Linha de Comando (CLI):** Menus interativos e saídas de dados formatadas e coloridas no terminal, proporcionando uma melhor experiência de uso (utilizando a biblioteca `rich`).
+1. **Consultar cotação atual:** Busca o valor atual de uma moeda e salva automaticamente no banco de dados com a data e hora corretas.
+2. **Gerar relatório de variação e Exportar:** Analisa as últimas cotações de uma moeda, calcula a variação percentual e exporta um arquivo `.txt`.
+3. **Template customizado:** Permite testar templates Jinja2 e salvá-los no banco de dados.
+4. **Listar histórico:** Exibe o histórico de consultas salvas, com suporte a filtro por moeda.
+5. **Comparar moedas:** Compara o valor de compra de duas moedas diferentes simultaneamente.
+6. **Usar template via arquivo (.txt):** Lê um layout de um arquivo de texto externo para formatar a saída.
+7. **Conversor Múltiplo:** Converte um valor em Reais (R$) para múltiplas moedas (USD, EUR, GBP) ao mesmo tempo.
+8. **Alerta de Mercado:** Monitora uma moeda e emite um alerta visual caso o valor caia abaixo de um limite definido pelo usuário.
 
-## Tarefas Bônus Implementadas
+## Fuso Horário (Timezone)
 
-* **Exportação de Relatórios (Jinja2):** Capacidade de exportar o histórico e as análises de câmbio para arquivos formatados (como HTML ou TXT) utilizando o motor de templates Jinja2.
-* **Cobertura de Testes Automatizados:** Inclusão de testes de software utilizando a biblioteca `pytest` para garantir a integridade das funções de API e de banco de dados (configurações de cache de teste devidamente isoladas via `.gitignore`).
-* **Tratamento de Exceções Avançado:** Sistema robusto para lidar com quedas de conexão, respostas inesperadas da API ou erros de gravação no banco de dados, retornando mensagens claras ao usuário.
-
-## Estrutura de Diretórios e Arquivos
-
-* `main.py`: Ponto de entrada da aplicação, contendo o loop principal e a interface de usuário.
-* `api.py`: Módulo dedicado exclusivamente à comunicação com a Brasil API e tratamento do formato JSON retornado.
-* `banco.py`: Módulo responsável por inicializar o SQLite, criar as tabelas necessárias e executar as querys de inserção e leitura.
-* `requirements.txt`: Arquivo de manifesto listando todas as bibliotecas de terceiros necessárias.
-* `.gitignore`: Arquivo de configuração que impede o envio de dados locais (como o `.db`), caches (`__pycache__`, `.pytest_cache`) e ambientes virtuais (`venv`) para o repositório remoto.
+O sistema foi configurado para forçar a utilização do fuso horário de Brasília/São Paulo (`America/Sao_Paulo`). Isso garante que os registros salvos no banco de dados tenham a data e hora corretas da consulta no Brasil, mesmo se a aplicação for executada em servidores na nuvem (como o GitHub Codespaces) que utilizam o horário UTC por padrão.
 
 ## Pré-requisitos
 
-Para executar este projeto, é necessário ter instalado em sua máquina:
-* Python 3.8 ou superior.
-* Gerenciador de pacotes `pip`.
+Devido à utilização da biblioteca nativa `zoneinfo` para a manipulação precisa do fuso horário, é obrigatório o uso de uma versão atualizada do Python:
+
+* **Python 3.9 ou superior**
+
+As seguintes bibliotecas externas também são necessárias (verifique o seu arquivo `requirements.txt`):
+* `rich` (Para a interface e cores no terminal)
+* `jinja2` (Para a renderização dos templates de texto)
+* `requests` (Para as requisições na API, caso utilizado no seu módulo `api.py`)
+
+## Como Executar
+
+1. Clone o repositório para a sua máquina ou ambiente de desenvolvimento.
+2. Instale as dependências executando o comando:
+   ```bash
+   pip install -r requirements.txt
