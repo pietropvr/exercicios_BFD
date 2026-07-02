@@ -17,7 +17,7 @@ O sistema possui um menu interativo com as seguintes opções:
 
 ## Fuso Horário (Timezone)
 
-O sistema foi configurado para forçar a utilização do fuso horário de Brasília/São Paulo (`America/Sao_Paulo`). Isso garante que os registros salvos no banco de dados tenham a data e hora corretas da consulta no Brasil, mesmo se a aplicação for executada em servidores na nuvem (como o GitHub Codespaces) que utilizam o horário UTC por padrão.
+O sistema foi configurado para forçar a utilização do fuso horário de Brasília/São Paulo (`America/Sao_Paulo`). Isso garante que os registros salvos no banco de dados tenham a data e hora corretas da consulta no Brasil.
 
 ## Pré-requisitos
 
