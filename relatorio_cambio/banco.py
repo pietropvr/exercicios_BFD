@@ -1,26 +1,30 @@
 import sqlite3
+import os
 from datetime import datetime
 
 def conectar():
-    return sqlite3.connect("dados_cambio.db")
+    diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+    caminho_db = os.path.join(diretorio_atual, "dados_cambio.db")
+    return sqlite3.connect(caminho_db)
+
 
 def criar_tabelas():
     with conectar() as con:
         con.execute("""
-            CREATE TABLE IF NOT EXISTS cotacoes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                moeda TEXT,
-                compra REAL,
-                venda REAL,
-                data_hora TEXT
-            )
+        CREATE TABLE IF NOT EXISTS cotacoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            moeda TEXT,
+            compra REAL,
+            venda REAL,
+            data_hora TEXT
+        )
         """)
         con.execute("""
-            CREATE TABLE IF NOT EXISTS templates (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nome TEXT,
-                texto_template TEXT
-            )
+        CREATE TABLE IF NOT EXISTS templates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT,
+            texto_template TEXT
+        )
         """)
 
 def salvar_cotacao(moeda, compra, venda):
@@ -38,16 +42,22 @@ def buscar_historico(moeda=None):
             cursor.execute("SELECT * FROM cotacoes WHERE moeda = ?", (moeda,))
         else:
             cursor.execute("SELECT * FROM cotacoes")
-        return cursor.fetchall()
+        
+        resultados = cursor.fetchall()
+        cursor.close()
+        return resultados
 
 def buscar_historico_dias(moeda, dias):
     with conectar() as con:
         cursor = con.cursor()
         cursor.execute("""
-            SELECT data_hora, compra FROM cotacoes 
-            WHERE moeda = ? ORDER BY id DESC LIMIT ?
+        SELECT data_hora, compra FROM cotacoes 
+        WHERE moeda = ? ORDER BY id DESC LIMIT ?
         """, (moeda, dias))
-        return cursor.fetchall()
+        
+        resultados = cursor.fetchall()
+        cursor.close()
+        return resultados
 
 def salvar_template(nome, texto):
     with conectar() as con:
